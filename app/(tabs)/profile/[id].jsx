@@ -159,7 +159,7 @@ export default function ProfileScreen() {
                       </TouchableOpacity>
                     </>
                   :
-                  <View className={`w-full h-full rounded-full animate-pulse  ${colorScheme === 'dark' ? ' bg-[#252529]' : ' bg-[#c3c3c366]'}`}>
+                  <View className={`w-full h-full rounded-full   ${colorScheme === 'dark' ? ' bg-[#252529]' : ' bg-[#c3c3c366]'}`}>
 
                   </View>
               }
@@ -201,7 +201,7 @@ export default function ProfileScreen() {
 
               {/* personal info */}
               <Text className={`text-lg mt-6  capitalize  ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>Personal Information </Text>
-              <View className={`p-5 rounded-lg ${!profile && "animate-pulse "}   mt-6 ${colorScheme === "dark" ? "bg-[#18181b]" : "bg-[#c3c3c366]"}`}>
+              <View className={`p-5 rounded-lg    mt-6 ${colorScheme === "dark" ? "bg-[#18181b]" : "bg-[#c3c3c366]"}`}>
 
                 {
                   profile &&
@@ -236,7 +236,7 @@ export default function ProfileScreen() {
 
               {/* contact info */}
               <Text className={`text-lg mt-6  capitalize  ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>Contact Information </Text>
-              <View className={`p-5 rounded-lg  ${!profile && "animate-pulse "}   mt-6 ${colorScheme === "dark" ? "bg-[#18181b]" : "bg-[#c3c3c366]"}`}>
+              <View className={`p-5 rounded-lg   mt-6 ${colorScheme === "dark" ? "bg-[#18181b]" : "bg-[#c3c3c366]"}`}>
 
                 {
                   profile &&
@@ -256,7 +256,7 @@ export default function ProfileScreen() {
               </View>
               {/* Motive info */}
               <Text className={`text-lg mt-6  capitalize  ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>Motivation </Text>
-              <View className={`p-5 rounded-lg  ${!profile && "animate-pulse"} mt-6 ${colorScheme === "dark" ? "bg-[#18181b]" : "bg-[#c3c3c366]"}`}>
+              <View className={`p-5 rounded-lg   mt-6 ${colorScheme === "dark" ? "bg-[#18181b]" : "bg-[#c3c3c366]"}`}>
 
                 <View className="flex-row justify-start items-start ">
                   <Text className={` leading-loose    ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>{profile?.motivation} </Text>
