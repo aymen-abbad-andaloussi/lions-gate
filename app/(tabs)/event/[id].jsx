@@ -8,6 +8,7 @@ import {
   ScrollView,
   BackHandler,
   useColorScheme,
+  Pressable,
   RefreshControl,
 } from "react-native";
 import axios from "axios";
@@ -29,20 +30,51 @@ const EventScreen = () => {
   const [message, setMessage] = useState(null);
   const colorScheme = useColorScheme();
   const [refreshing, setRefreshing] = useState(false);
+  const attendedCount = Array.isArray(eventParticipant)
+    ? eventParticipant.filter((p) => p?.is_visited).length
+    : 0;
 
-  // get data for the event
+  const formatDate = (value) => {
+    if (!value) return "";
+    const dt = new Date(value);
+    if (isNaN(dt.getTime())) return String(value);
+    try {
+      return dt.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (_) {
+      return String(value);
+    }
+  };
+
+  // get data for the event (adaptable to multiple response shapes)
   const getInfoData = async () => {
     try {
       setRefreshing(true);
       const response = await axios.get(`${APP_URL}events/${id}`);
-      const dataEvent = await response.data.event;
-      setEventData(dataEvent);
-      const dataParticipant = await response.data.participants;
-      seteventId(eventData?.id);
-      setEventParticipant(dataParticipant);
-      setRefreshing(false);
+      const payload = response?.data;
+
+      // Determine event object from common shapes
+      const resolvedEvent = payload?.event
+        ? payload.event
+        : Array.isArray(payload)
+        ? payload.find((e) => String(e?.id) === String(id))
+        : payload;
+
+      setEventData(resolvedEvent || null);
+      seteventId(resolvedEvent?.id ?? null);
+
+      // Participants may be under `participants`, fallback to empty array
+      const resolvedParticipants = payload?.participants ?? [];
+      setEventParticipant(Array.isArray(resolvedParticipants) ? resolvedParticipants : []);
     } catch (error) {
       console.error(error);
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -130,6 +162,7 @@ const EventScreen = () => {
 
   return (
     <ScrollView
+      className="p-5 bg-[#f7f7f8] dark:bg-[#151718]"
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -139,50 +172,30 @@ const EventScreen = () => {
         />
       }
     >
-      <View className=" w-full px-1 h-[10vh] mt-6 flex-row items-center justify-between">
-        <View>
-          <Ionicons
-            color={colorScheme === "dark" ? "white" : "black"}
-            onPress={() => {
-              router.navigate("/");
-            }}
-            size={22}
-            name="arrow-back"
-          />
-        </View>
-        <Text
-          className={`capitalize mt-1 ${
-            colorScheme === "dark" ? "text-white" : "text-black"
-          }`}
-        >
-          {eventData?.name["en"].length > 20
-            ? eventData?.name["en"].slice(0, 20) + "..."
-            : eventData?.name["en"]}
-        </Text>
-        {/* scanner */}
-        <View className="">
-          <Ionicons
-            onPress={toggleCamera}
-            color={colorScheme === "dark" ? "white" : "black"}
-            size={22}
-            name="qr-code-outline"
-          />
-        </View>
-      </View>
       {scanner ? (
-        <View className="h-screen bg-black/80 items-center justify-center">
-          <View className="w-96 h-96 border border-white rounded-lg">
-            <CameraView
-              facing="back"
-              onBarcodeScanned={(text) => {
-                checkParticipant(text.data);
-              }}
-            >
-              <View className="w-full h-full "></View>
-            </CameraView>
+        <View className="flex-1 bg-black">
+          <CameraView
+            facing="back"
+            onBarcodeScanned={(text) => {
+              checkParticipant(text.data);
+            }}
+            className="absolute h-screen w-full"
+          >
+            <View className="h-screen w-screen" />
+          </CameraView>
+
+          {/* Overlay frame */}
+          <View className="absolute inset-0 items-center justify-center">
+            <View className="w-80 h-80 rounded-2xl border-2 border-white/60" />
           </View>
+
+          {/* Close button */}
+          <Pressable onPress={() => setScanner(false)} className="absolute top-14 right-5 w-10 h-10 rounded-full items-center justify-center bg-white/10">
+            <Ionicons name="close" size={20} color="#fff" />
+          </Pressable>
+
           {waiting && (
-            <View className="w-full h-screen items-center justify-center px-5 absolute top-0  bg-black/70">
+            <View className="absolute inset-0 items-center justify-center px-5 bg-black/70">
               {message ? (
                 message == "Credentials match." ? (
                   <View className="flex-col items-center">
@@ -192,23 +205,17 @@ const EventScreen = () => {
                 ) : message == "Already participated." ? (
                   <View className="flex-col items-center">
                     <Logo color={"#fb923c"} size={100} />
-                    <Text className="text-2xl text-orange-400">
-                      Already Passed
-                    </Text>
+                    <Text className="text-2xl text-orange-400">Already Passed</Text>
                   </View>
                 ) : message == "Participant belong to another session" ? (
                   <View className="flex-col items-center">
                     <Logo color={"#fff"} size={100} />
-                    <Text className="text-2xl text-white">
-                      Participant belong to another session
-                    </Text>
+                    <Text className="text-2xl text-white">Participant belong to another session</Text>
                   </View>
                 ) : (
                   <View className="flex-col items-center">
                     <Logo color={"#dc2626"} size={100} />
-                    <Text className="text-2xl text-red-600">
-                      No such participated
-                    </Text>
+                    <Text className="text-2xl text-red-600">No such participated</Text>
                   </View>
                 )
               ) : (
@@ -219,7 +226,51 @@ const EventScreen = () => {
         </View>
       ) : (
         <>
-          <View className="px-5">
+          <View className=" w-full px-1 mt-12 flex-row items-center justify-between">
+            <View>
+              <Ionicons
+                color={colorScheme === "dark" ? "white" : "black"}
+                onPress={() => {
+                  router.navigate("/");
+                }}
+                size={22}
+                name="arrow-back"
+              />
+            </View>
+            <Text
+              className={`capitalize mt-1 ${
+                colorScheme === "dark" ? "text-white" : "text-black"
+              }`}
+            >
+              {(() => {
+                const title = eventData?.name?.en ?? eventData?.name?.fr ?? eventData?.name?.ar ?? eventData?.name;
+                if (!title) return "";
+                return String(title).length > 20 ? String(title).slice(0, 20) + "..." : String(title);
+              })()}
+            </Text>
+            {/* scanner */}
+            <View className="">
+              <Ionicons
+                onPress={toggleCamera}
+                color={colorScheme === "dark" ? "white" : "black"}
+                size={22}
+                name="qr-code-outline"
+              />
+            </View>
+          </View>
+          <View className="pt-4">
+            {/* Stats cards (match session style) */}
+            <View className="flex-row mt-2 mb-5 space-x-4 gap-x-4">
+              <View className={`flex-1 p-4 rounded-2xl border ${colorScheme === "dark" ? "bg-white/10 border-white/10" : "bg-white/95 border-black/10 shadow-sm"}`}>
+                <Text className={`text-xs uppercase tracking-wider ${colorScheme === "dark" ? "text-white/70" : "text-black/60"}`}>Participants</Text>
+                <Text className={`mt-1 text-3xl font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`}>{Array.isArray(eventParticipant) ? eventParticipant.length : 0}</Text>
+              </View>
+              <View className={`flex-1 p-4 rounded-2xl border ${colorScheme === "dark" ? "bg-white/10 border-white/10" : "bg-white/95 border-black/10 shadow-sm"}`}>
+                <Text className={`text-xs uppercase tracking-wider ${colorScheme === "dark" ? "text-white/70" : "text-black/60"}`}>Attended</Text>
+                <Text className={`mt-1 text-3xl font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`}>{attendedCount}</Text>
+              </View>
+            </View>
+
             <Image
               className="w-full h-64 object-cover rounded-lg"
               source={{
@@ -231,39 +282,27 @@ const EventScreen = () => {
                 colorScheme === "dark" ? "bg-slate-400/10" : "bg-white"
               } rounded-lg mt-5 `}
             >
-              <View className="mb-3 p-3">
-                <Text
-                  className={`text-xl font-medium py-3 ${
-                    colorScheme === "dark" ? "text-white" : "text-black"
-                  }`}
-                >
-                  Location :{" "}
-                </Text>
-                <Text
-                  className={` ${
-                    colorScheme === "dark" ? "text-white" : "text-black"
-                  }`}
-                >
-                  {eventData?.location["en"]}
-                </Text>
-              </View>
-              <View className="px-3 mb-3 border-t border-stone-200">
-                <Text
-                  className={`text-xl font-medium py-3 ${
-                    colorScheme === "dark" ? "text-white" : "text-black"
-                  } `}
-                >
-                  Description :{" "}
-                </Text>
-                <Text
-                  className={`${
-                    colorScheme === "dark" ? "text-white" : "text-black"
-                  }`}
-                >
-                  {eventData?.description["en"]}
-                </Text>
-              </View>
-              {eventParticipant?.length > 0 ? (
+              {eventData?.date && (
+                <View className="p-3">
+                  <View className="flex-row items-center">
+                    <Ionicons name="calendar-outline" size={16} color={colorScheme === "dark" ? "#cfcfcf" : "#6b7280"} />
+                    <Text className={`ml-2 text-xs uppercase tracking-wider ${colorScheme === "dark" ? "text-white/70" : "text-black/60"}`}>Date</Text>
+                  </View>
+                  <Text className={`mt-1 text-lg font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`}>{formatDate(eventData?.date)}</Text>
+                </View>
+              )}
+              {eventData?.location && (
+                <View className="px-3 mb-3 border-t border-stone-200">
+                  <View className="flex-row items-center py-3">
+                    <Ionicons name="location-outline" size={16} color={colorScheme === "dark" ? "#cfcfcf" : "#6b7280"} />
+                    <Text className={`ml-2 text-xs uppercase tracking-wider ${colorScheme === "dark" ? "text-white/70" : "text-black/60"}`}>Location</Text>
+                  </View>
+                  <Text className={`${colorScheme === "dark" ? "text-white" : "text-black"}`}>
+                    {eventData?.location?.en ?? eventData?.location}
+                  </Text>
+                </View>
+              )}
+              {Array.isArray(eventParticipant) && eventParticipant.length > 0 ? (
                 <View className=" border-t p-3 border-stone-200">
                   <Text
                     className={`font-medium text-xl my-3 ${
@@ -314,9 +353,9 @@ const EventScreen = () => {
                   <MaterialIcons
                     name="do-not-disturb"
                     size={60}
-                    color={"black"}
+                    color={colorScheme === "dark" ? "white" : "black"}
                   />
-                  <Text className={`text-xl  font-light `}>
+                  <Text className={`text-xl font-light ${colorScheme === "dark" ? "text-white" : "text-black"}`}>
                     No participant available
                   </Text>
                 </View>

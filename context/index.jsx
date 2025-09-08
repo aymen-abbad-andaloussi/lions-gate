@@ -1,15 +1,15 @@
 import axios from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
-import { useColorScheme } from "react-native";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 const appContext = createContext();
 
 const AppProvider = ({ children }) => {
 
-  // const APP_URL = "http://172.28.0.172:8000/api/";
-  // const IMAGE_URL = `http://172.28.0.172:8000/storage/images`
-  const APP_URL = "https://backend.mylionsgeek.ma/api/";
-  const IMAGE_URL = `https://backend.mylionsgeek.ma/storage/images`
+  // const APP_URL = "http://192.168.100.100:8000/api/";
+  // const IMAGE_URL = `http://192.168.100.100:8000/storage/images`
+  const APP_URL = "http://lionsgeek.mylionsgeek.ma/api/";
+  const IMAGE_URL = `http://lionsgeek.mylionsgeek.ma/storage/images`
 
   const [infoSession, setInfoSession] = useState(null)
   const [events, setEvents] = useState(null)
@@ -21,15 +21,15 @@ const AppProvider = ({ children }) => {
     setRefreshingSession(true)
     let response = await axios.get(APP_URL + "lionsgate/infosessions")
     let data = response?.data
+    
     setInfoSession(data.infos)
-    // console.log(response.data)
     setRefreshingSession(false)
   }
   const eventData = async () => {
     let response = await axios.get(APP_URL + "events")
+    console.log(response);
     let data = response?.data
     setEvents(data)
-    // console.log(events)
   }
   useEffect(() => {
     sessionData()

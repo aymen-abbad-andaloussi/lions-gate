@@ -72,9 +72,15 @@ export default function SessionScreen() {
     }
   };
 
-  const toggleCamera = () => {
-    if (!permission.granted) requestPermission();
-    else setScanner(true);
+  const toggleCamera = async () => {
+    if (permission?.granted) {
+      setScanner(true);
+      return;
+    }
+    const response = await requestPermission();
+    if (response?.granted) {
+      setScanner(true);
+    }
   };
 
   const checkStudent = async (data) => {
@@ -158,21 +164,39 @@ export default function SessionScreen() {
 
   if (scanner) {
     return (
-      <View className="flex-1 items-center justify-center bg-black/80">
-        <View className="w-96 h-96 border border-white rounded-lg overflow-hidden">
+      <View className="flex-1 bg-black">
+        {permission?.granted ? (
           <CameraView
             facing="back"
             onBarcodeScanned={({ data }) => checkStudent(data)}
-            className="flex-1"
-          />
+            className="absolute h-screen w-screen"
+          >
+            <View className="h-screen w-screen" />
+          </CameraView>
+        ) : (
+          <View className="flex-1 items-center justify-center">
+            <Text className="text-white/90 text-base">Camera permission required</Text>
+            <Pressable onPress={toggleCamera} className="mt-4 px-4 py-2 bg-white/10 rounded-full">
+              <Text className="text-white">Grant Permission</Text>
+            </Pressable>
+          </View>
+        )}
+
+        {/* Overlay UI */}
+        <View className="absolute inset-0 items-center justify-center">
+          <View className="w-80 h-80 rounded-2xl border-2 border-white/60" />
         </View>
+
+        <Pressable onPress={() => setScanner(false)} className="absolute top-14 right-5 w-10 h-10 rounded-full items-center justify-center bg-white/10">
+          <Ionicons name="close" size={20} color="#fff" />
+        </Pressable>
 
         {waiting && (
           <View className="absolute inset-0 items-center justify-center bg-black/70 px-5">
             {message ? (
               <>
                 <Logo color={message.includes("match") ? "#4ade80" : message.includes("Already") ? "#fb923c" : "#dc2626"} size={100} />
-                <Text className={`text-2xl ${message.includes("match") ? "text-green-400" : message.includes("Already") ? "text-orange-400" : "text-red-600"}`}>{message}</Text>
+                <Text className={`mt-3 text-xl font-semibold ${message.includes("match") ? "text-green-400" : message.includes("Already") ? "text-orange-400" : "text-red-600"}`}>{message}</Text>
               </>
             ) : (
               <LoadingScreen />
@@ -184,21 +208,21 @@ export default function SessionScreen() {
   }
 
   return (
-    <ScrollView className="p-5" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={getInfoData} />}>
-      <View className="flex-row justify-between items-center mt-6">
-        <Ionicons name="arrow-back" size={22} color={colorScheme === "dark" ? "white" : "black"} onPress={() => router.navigate("/")} />
-        <Text className={`text-base ${colorScheme === "dark" ? "text-white" : "text-black"}`}>{title}</Text>
-        <Ionicons name="qr-code-outline" size={22} color={colorScheme === "dark" ? "white" : "black"} onPress={toggleCamera} />
+    <ScrollView className="p-5 bg-[#f7f7f8] dark:bg-[#151718]" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={getInfoData} />}>
+      <View className="flex-row justify-between items-center mt-12 px-1">
+        <Ionicons name="arrow-back" size={24} color={colorScheme === "dark" ? "white" : "black"} onPress={() => router.navigate("/")} />
+        <Text className={`text-base font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`} numberOfLines={1}>{title}</Text>
+        <Ionicons name="qr-code-outline" size={28} color={colorScheme === "dark" ? "white" : "black"} onPress={toggleCamera} />
       </View>
 
-      <View className="flex-row mt-6 space-x-2">
-        <View className={`flex-1 p-4 rounded-lg ${colorScheme === "dark" ? "bg-[#333]" : "bg-gray-200"}`}>
-          <Text className={`text-base ${colorScheme === "dark" ? "text-white" : "text-black"}`}>Participants</Text>
-          <Text className={`text-3xl ${colorScheme === "dark" ? "text-white" : "text-black"}`}>{backup.length}</Text>
+      <View className="flex-row mt-6 space-x-4 gap-x-4">
+        <View className={`flex-1 p-4 rounded-2xl border ${colorScheme === "dark" ? "bg-white/10 border-white/10" : "bg-white/95 border-black/10 shadow-sm"}`}>
+          <Text className={`text-xs uppercase tracking-wider ${colorScheme === "dark" ? "text-white/70" : "text-black/60"}`}>Participants</Text>
+          <Text className={`mt-1 text-3xl font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`}>{backup.length}</Text>
         </View>
-        <View className={`flex-1 p-4 rounded-lg ${colorScheme === "dark" ? "bg-[#333]" : "bg-gray-200"}`}>
-          <Text className={`text-base ${colorScheme === "dark" ? "text-white" : "text-black"}`}>Attended</Text>
-          <Text className={`text-3xl ${colorScheme === "dark" ? "text-white" : "text-black"}`}>{attended.length}</Text>
+        <View className={`flex-1 p-4 rounded-2xl border ${colorScheme === "dark" ? "bg-white/10 border-white/10" : "bg-white/95 border-black/10 shadow-sm"}`}>
+          <Text className={`text-xs uppercase tracking-wider ${colorScheme === "dark" ? "text-white/70" : "text-black/60"}`}>Attended</Text>
+          <Text className={`mt-1 text-3xl font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`}>{attended.length}</Text>
         </View>
       </View>
 
@@ -206,11 +230,11 @@ export default function SessionScreen() {
         placeholder="Search..."
         value={search}
         onChangeText={handleSearch}
-        className={`mt-6 px-4 py-3 rounded-lg ${colorScheme === "dark" ? "bg-[#333] text-white" : "bg-gray-200 text-black"}`}
+        className={`mt-6 px-4 py-3 rounded-full border ${colorScheme === "dark" ? "bg-white/5 text-white border-white/10" : "bg-white text-black border-black/10 shadow-sm"}`}
         placeholderTextColor={colorScheme === "dark" ? "#aaa" : "#555"}
       />
 
-      <Text className={`mt-6 text-lg ${colorScheme === "dark" ? "text-white" : "text-black"}`}>Participants:</Text>
+      <Text className={`mt-6 text-lg font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`}>Participants</Text>
 
       {loading ? (
         <View className="items-center justify-center h-60">
@@ -218,7 +242,7 @@ export default function SessionScreen() {
         </View>
       ) : session.length === 0 ? (
         <View className="items-center justify-center h-60">
-          <Text className={`text-xl ${colorScheme === "dark" ? "text-white/40" : "text-black/30"}`}>No participants found.</Text>
+          <Text className={`text-base ${colorScheme === "dark" ? "text-white/50" : "text-black/40"}`}>No participants found</Text>
         </View>
       ) : (
         <FlatList

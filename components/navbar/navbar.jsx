@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import {
     View,
     Text,
-    useColorScheme,
 } from "react-native";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 
 

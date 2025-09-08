@@ -49,18 +49,12 @@ export default function ProfileScreen() {
     });
     formData.append("id", profile.id)
 
-    console.log("Form ready to send");
-
-
     try {
-      console.log("Form is sending now");
       const response = await axios.post(APP_URL + "session-photo", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log("Form is sent");
-      console.log(response.data.message);
       setProfile(response.data.profile)
       setPhoto(null)
       setShooter(false)
@@ -75,7 +69,6 @@ export default function ProfileScreen() {
     let data = await response.data
     setProfile(data);
     setRefreshing(false)
-    console.log(profile);
 
   }
 
@@ -129,7 +122,9 @@ export default function ProfileScreen() {
           <View className="p-5">
             {/* navbar */}
             <View className=' w-full px-1 h-[10vh] mt-6 flex-row items-center justify-between'>
-         
+              <View className=''>
+                <Ionicons onPress={() => { session ? router.navigate(`/(tabs)/session/${session}`) : router.back() }} color={colorScheme === 'dark' ? "white" : "black"} size={22} name="arrow-back" />
+              </View>
 
               <View className=''>
                 <Text className={`text-l   capitalize  ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>{profile?.full_name} </Text>
@@ -275,6 +270,9 @@ export default function ProfileScreen() {
                   <View className="h-screen w-screen">
                   </View>
                 </CameraView>
+                <TouchableOpacity onPress={() => setShooter(false)} className="absolute top-14 right-5 w-10 h-10 rounded-full items-center justify-center bg-white/10">
+                  <Ionicons name="close" size={20} color="#fff" />
+                </TouchableOpacity>
                 <TouchableOpacity
                   className="absolute bottom-[10vh] px-10 py-3 rounded-lg bg-white"
                   onPress={async () => {
