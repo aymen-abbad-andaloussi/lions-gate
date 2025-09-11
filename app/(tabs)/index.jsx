@@ -1,5 +1,5 @@
 import { Logo } from "@/assets/images/logo";
-import LoadingScreen from "@/components/loading";
+
 import Navbar from "@/components/navbar/navbar";
 
 import axios from "axios";
@@ -8,75 +8,40 @@ import {
   Image,
   View,
   Text,
-  Platform,
   ScrollView,
-  Pressable,
-  ImageBackground,
-  Dimensions,
   TextInput,
   TouchableOpacity,
-  BackHandler,
+  useColorScheme,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { Ionicons, MaterialIcons, FontAwesome } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { useAppContext } from "@/context";
 import { router } from "expo-router";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
-  const { infoSession, events, participants, IMAGE_URL, sessionData, refreshingSession } = useAppContext();
-  const [selectedTab, setSelectedTab] = useState("Info Session");
+  const { infoSession, events, IMAGE_URL, sessionData, refreshingSession } = useAppContext();
+  const [selectedTab, setSelectedTab] = useState("Info Sessions");
 
   const tabs = [
     {
-      name: "Info Session",
-      icon: (
-        <Ionicons
-          name="information-circle-outline"
-          size={20}
-          color={
-            selectedTab === "Info Session"
-              ? colorScheme === "dark"
-                ? "black"
-                : "white"
-              : colorScheme === "dark"
-              ? "white"
-              : "black"
-          }
-        />
-      ),
+      name: "Info Sessions",
+      icon: "information-circle-outline",
+      count: infoSession?.length || 0,
     },
     {
-      name: "Event",
-      icon: (
-        <MaterialIcons
-          name="event"
-          size={20}
-          color={
-            selectedTab === "Event"
-              ? colorScheme === "dark"
-                ? "black"
-                : "white"
-              : colorScheme === "dark"
-              ? "white"
-              : "black"
-          }
-        />
-      ),
+      name: "Events",
+      icon: "calendar-outline",
+      count: events?.length || 0,
     },
-    // {
-    //   name: "Participant",
-    //   icon: <FontAwesome name="users" size={20} color={selectedTab === "Participant" ? (colorScheme === 'dark' ? "black" : "white") : (colorScheme === 'dark' ? "white" : "black")} />
-    // },
   ];
 
   // Determine the data to display based on the selected tab
   const getData = () => {
-    if (selectedTab === "Event") return events;
-    if (selectedTab === "Info Session") return infoSession;
-    if (selectedTab === "Participant") return participants;
-    return null;
+    if (selectedTab === "Events") return events;
+    if (selectedTab === "Info Sessions") return infoSession;
+    return [];
   };
 
   // useEffect(() => {
@@ -128,7 +93,19 @@ export default function HomeScreen() {
                   : "bg-gray-100 border border-black/10"
               }`}
             >
-              {tab.icon}
+              <Ionicons
+                name={tab.icon}
+                size={18}
+                color={
+                  selectedTab === tab.name
+                    ? colorScheme === "dark"
+                      ? "black"
+                      : "white"
+                    : colorScheme === "dark"
+                    ? "white"
+                    : "black"
+                }
+              />
               <Text
                 className={`ml-2 text-sm font-medium capitalize ${
                   selectedTab === tab.name
@@ -148,7 +125,7 @@ export default function HomeScreen() {
 
         {/* Data display */}
         <ScrollView className="mt-6 ">
-          {selectedTab == "Event" ? (
+          {selectedTab == "Events" ? (
             getData() ? (
               <View>
                 {getData().map((item, index) => (
@@ -196,7 +173,7 @@ export default function HomeScreen() {
                 </Text>
               </View>
             )
-          ) : selectedTab == "Info Session" ? (
+          ) : selectedTab == "Info Sessions" ? (
             getData() ? (
               <View>
                 {getData().map((item, index) => (

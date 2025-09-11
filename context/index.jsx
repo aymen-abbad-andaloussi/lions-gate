@@ -6,10 +6,11 @@ const appContext = createContext();
 
 const AppProvider = ({ children }) => {
 
-  // const APP_URL = "http://192.168.100.100:8000/api/";
-  // const IMAGE_URL = `http://192.168.100.100:8000/storage/images`
-  const APP_URL = "http://lionsgeek.mylionsgeek.ma/api/";
-  const IMAGE_URL = `http://lionsgeek.mylionsgeek.ma/storage/images`
+  const APP_URL = "http://192.168.100.100:8000/api/";
+  const IMAGE_URL = `http://192.168.100.100:8000/storage/images`
+
+  // const APP_URL = "https://lionsgeek.ma/api/";
+  // const IMAGE_URL = `https://lionsgeek.ma/storage/images`
 
   const [infoSession, setInfoSession] = useState(null)
   const [events, setEvents] = useState(null)
@@ -27,7 +28,7 @@ const AppProvider = ({ children }) => {
   }
   const eventData = async () => {
     let response = await axios.get(APP_URL + "events")
-    console.log(response);
+    // console.log(response);
     let data = response?.data
     setEvents(data)
   }

@@ -10,11 +10,12 @@ import {
   useColorScheme,
   Pressable,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import axios from "axios";
 import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 // import { useFocusEffect } from '@react-navigation/native';
-import LoadingScreen from "@/components/loading";
+
 import { Logo } from "@/assets/images/logo";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 
@@ -219,7 +220,10 @@ const EventScreen = () => {
                   </View>
                 )
               ) : (
-                <LoadingScreen />
+                <View className="items-center justify-center">
+                  <ActivityIndicator size="large" color="white" />
+                  <Text className="mt-4 text-white text-base">Processing QR code...</Text>
+                </View>
               )}
             </View>
           )}

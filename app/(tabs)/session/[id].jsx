@@ -17,7 +17,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-import LoadingScreen from "@/components/loading";
+
 
 export default function SessionScreen() {
   const { colorScheme, APP_URL, IMAGE_URL } = useAppContext();
@@ -33,11 +33,40 @@ export default function SessionScreen() {
   const [title, setTitle] = useState("");
   const [sessionId, setSessionId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [displayedParticipants, setDisplayedParticipants] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
   const { id } = useLocalSearchParams();
 
-  const getInfoData = async () => {
-    setLoading(true);
-    setRefreshing(true);
+  const PARTICIPANTS_PER_PAGE = 48;
+
+  // Function to load participants in chunks
+  const loadParticipantsChunk = (participants, page = 1) => {
+    const startIndex = 0;
+    const endIndex = page * PARTICIPANTS_PER_PAGE;
+    return participants.slice(startIndex, endIndex);
+  };
+
+  // Function to load more participants
+  const loadMoreParticipants = () => {
+    if (loadingMore) return;
+
+    setLoadingMore(true);
+    setTimeout(() => {
+      const nextPage = currentPage + 1;
+      const newDisplayed = loadParticipantsChunk(session, nextPage);
+      setDisplayedParticipants(newDisplayed);
+      setCurrentPage(nextPage);
+      setLoadingMore(false);
+    }, 500); // Small delay for better UX
+  };
+
+  const getInfoData = async (isRefresh = false) => {
+    if (!isRefresh) {
+      setLoading(true);
+    }
+    setRefreshing(isRefresh);
+
     try {
       const response = await axios.get(`${APP_URL}session-data?id=${id}`);
       const data = response.data;
@@ -46,6 +75,10 @@ export default function SessionScreen() {
       setBackup(data.participants);
       setAttended(data.attended);
       setTitle(`${data.session.formation} - ${data.session.name}`);
+
+      // Reset pagination and load first chunk
+      setCurrentPage(1);
+      setDisplayedParticipants(loadParticipantsChunk(data.participants, 1));
     } catch (error) {
       console.error("Error fetching session data:", error);
     } finally {
@@ -56,20 +89,26 @@ export default function SessionScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      getInfoData();
+      getInfoData(false); // Initial load, not a refresh
     }, [id])
   );
 
   const handleSearch = (text) => {
     setSearch(text);
+    let filteredParticipants;
+
     if (text) {
-      const result = backup.filter((e) =>
+      filteredParticipants = backup.filter((e) =>
         e.full_name.toLowerCase().includes(text.toLowerCase())
       );
-      setSession(result);
     } else {
-      setSession(backup);
+      filteredParticipants = backup;
     }
+
+    setSession(filteredParticipants);
+    // Reset pagination when searching
+    setCurrentPage(1);
+    setDisplayedParticipants(loadParticipantsChunk(filteredParticipants, 1));
   };
 
   const toggleCamera = async () => {
@@ -97,6 +136,8 @@ export default function SessionScreen() {
             id,
             sessionId,
           });
+          console.log(response);
+          
           const { message, profile } = response.data;
           setMessage(message);
           await getInfoData();
@@ -199,7 +240,10 @@ export default function SessionScreen() {
                 <Text className={`mt-3 text-xl font-semibold ${message.includes("match") ? "text-green-400" : message.includes("Already") ? "text-orange-400" : "text-red-600"}`}>{message}</Text>
               </>
             ) : (
-              <LoadingScreen />
+              <View className="items-center justify-center">
+                <ActivityIndicator size="large" color="white" />
+                <Text className="mt-4 text-white text-base">Processing QR code...</Text>
+              </View>
             )}
           </View>
         )}
@@ -207,8 +251,20 @@ export default function SessionScreen() {
     );
   }
 
+  // Show loading screen while fetching initial data
+  if (loading) {
+    return (
+      <View className={`flex-1 items-center justify-center ${colorScheme === "dark" ? "bg-black" : "bg-gray-50"}`}>
+        <ActivityIndicator size="large" color={colorScheme === "dark" ? "white" : "black"} />
+        <Text className={`mt-4 text-base ${colorScheme === "dark" ? "text-white" : "text-black"}`}>
+          Loading session data...
+        </Text>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView className="p-5 bg-[#f7f7f8] dark:bg-[#151718]" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={getInfoData} />}>
+    <ScrollView className="p-5 bg-[#f7f7f8] dark:bg-[#151718]" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => getInfoData(true)} />}>
       <View className="flex-row justify-between items-center mt-12 px-1">
         <Ionicons name="arrow-back" size={24} color={colorScheme === "dark" ? "white" : "black"} onPress={() => router.navigate("/")} />
         <Text className={`text-base font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`} numberOfLines={1}>{title}</Text>
@@ -236,23 +292,63 @@ export default function SessionScreen() {
 
       <Text className={`mt-6 text-lg font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`}>Participants</Text>
 
-      {loading ? (
-        <View className="items-center justify-center h-60">
-          <ActivityIndicator size="large" color={colorScheme === "dark" ? "white" : "black"} />
-        </View>
-      ) : session.length === 0 ? (
+      {session.length === 0 ? (
         <View className="items-center justify-center h-60">
           <Text className={`text-base ${colorScheme === "dark" ? "text-white/50" : "text-black/40"}`}>No participants found</Text>
         </View>
       ) : (
-        <FlatList
-          data={session.sort((a, b) => b.is_visited - a.is_visited || new Date(b.updated_at) - new Date(a.updated_at))}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => index.toString()}
-          numColumns={3}
-          scrollEnabled={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
-        />
+        <>
+          <FlatList
+            data={displayedParticipants.sort((a, b) => b.is_visited - a.is_visited || new Date(b.updated_at) - new Date(a.updated_at))}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => index.toString()}
+            numColumns={3}
+            scrollEnabled={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          />
+
+          {/* Load More Button */}
+          {displayedParticipants.length < session.length && (
+            <View className="items-center mt-6 mb-8">
+              <Pressable
+                onPress={loadMoreParticipants}
+                disabled={loadingMore}
+                className={`px-8 py-4 rounded-full border-2 ${
+                  colorScheme === "dark"
+                    ? "bg-white/10 border-white/20"
+                    : "bg-white border-black/10 shadow-sm"
+                } ${loadingMore ? "opacity-50" : ""}`}
+              >
+                {loadingMore ? (
+                  <View className="flex-row items-center">
+                    <ActivityIndicator
+                      size="small"
+                      color={colorScheme === "dark" ? "white" : "black"}
+                    />
+                    <Text className={`ml-2 text-base font-medium ${
+                      colorScheme === "dark" ? "text-white" : "text-black"
+                    }`}>
+                      Loading...
+                    </Text>
+                  </View>
+                ) : (
+                  <View className="flex-row items-center">
+                    <Ionicons
+                      name="add-circle-outline"
+                      size={20}
+                      color={colorScheme === "dark" ? "white" : "black"}
+                    />
+                    <Text className={`ml-2 text-base font-medium ${
+                      colorScheme === "dark" ? "text-white" : "text-black"
+                    }`}>
+                      Load More ({session.length - displayedParticipants.length} remaining)
+                    </Text>
+                  </View>
+                )}
+              </Pressable>
+            </View>
+          )}
+        </>
       )}
     </ScrollView>
   );
