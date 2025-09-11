@@ -123,13 +123,22 @@ export default function SessionScreen() {
   };
 
   const checkStudent = async (data) => {
-    if (data.startsWith("{\"email")) {
+    // Check if the QR code contains JSON data with code and email fields
+    if (data.startsWith("{") && (data.includes("\"code\"") && data.includes("\"email\""))) {
       if (!waiting) {
         setMessage(null);
         setWaiting(true);
         try {
           const info = JSON.parse(data);
           const { email, code } = info;
+
+          // Validate that both code and email exist
+          if (!code || !email) {
+            setMessage("Invalid QR code format");
+            setWaiting(false);
+            return;
+          }
+
           const response = await axios.put(`${APP_URL}validate-invitation`, {
             code,
             email,
@@ -137,25 +146,30 @@ export default function SessionScreen() {
             sessionId,
           });
           console.log(response);
-          
+
           const { message, profile } = response.data;
           setMessage(message);
           await getInfoData();
           setTimeout(() => {
-            setWaiting(false);
             setScanner(false);
+            setWaiting(false);
             if (profile) {
               router.navigate(`profile/${profile.id}?session=${id}`);
             }
           }, 1500);
         } catch (error) {
-          const msg = error?.response?.data?.message || "Unknown error";
+          const msg = error?.response?.data?.message || "Invalid QR code or network error";
           setMessage(msg);
-          setWaiting(false);
+          setTimeout(() => {
+            setWaiting(false);
+          }, 2000);
         }
       }
     } else {
-      setMessage("Invalid QR data");
+      setMessage("Invalid QR code format");
+      setTimeout(() => {
+        setWaiting(false);
+      }, 2000);
     }
   };
 
