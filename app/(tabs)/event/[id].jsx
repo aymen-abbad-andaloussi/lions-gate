@@ -63,8 +63,8 @@ const EventScreen = () => {
       const resolvedEvent = payload?.event
         ? payload.event
         : Array.isArray(payload)
-        ? payload.find((e) => String(e?.id) === String(id))
-        : payload;
+          ? payload.find((e) => String(e?.id) === String(id))
+          : payload;
 
       setEventData(resolvedEvent || null);
       seteventId(resolvedEvent?.id ?? null);
@@ -105,7 +105,12 @@ const EventScreen = () => {
 
   // check Participant
   const checkParticipant = async (data) => {
-    if (data.slice(0, 7) == '{"email') {
+    if (!data) {
+      setMessage("Invalid QR code");
+      return;
+    }
+
+    if (data.startsWith('{"email')) {
       if (!waiting) {
         setMessage(null);
         setWaiting(true);
@@ -118,6 +123,7 @@ const EventScreen = () => {
             APP_URL + "validate-event-invitation",
             { code, email, id, eventId }
           );
+
           let message = response.data.message;
           await getInfoData();
 
@@ -127,22 +133,16 @@ const EventScreen = () => {
             setScanner(false);
           }, 1500);
         } catch (error) {
-          if (error.response) {
-            // Server responded with a status other than 200 range
-            console.error("Error:", error.response.data.message);
-          } else if (error.request) {
-            // Request was made but no response received
-            console.error("Network error:", error.request);
-          } else {
-            // Something happened in setting up the request
-            console.error("Error:", error.message);
-          }
+          setMessage("Error validating participant");
+          console.error(error?.response?.data?.message || error.message);
+          setWaiting(false);
         }
       }
     } else {
       setMessage("Not found");
     }
   };
+
   useEffect(() => {
     const handleBackPress = () => {
       if (scanner) {
@@ -177,13 +177,14 @@ const EventScreen = () => {
         <View className="flex-1 bg-black">
           <CameraView
             facing="back"
-            onBarcodeScanned={(text) => {
-              checkParticipant(text.data);
+            onBarcodeScanned={({ data }) => {
+              checkParticipant(data);
             }}
             className="absolute h-screen w-full"
           >
             <View className="h-screen w-screen" />
           </CameraView>
+
 
           {/* Overlay frame */}
           <View className="absolute inset-0 items-center justify-center">
@@ -242,9 +243,8 @@ const EventScreen = () => {
               />
             </View>
             <Text
-              className={`capitalize mt-1 ${
-                colorScheme === "dark" ? "text-white" : "text-black"
-              }`}
+              className={`capitalize mt-1 ${colorScheme === "dark" ? "text-white" : "text-black"
+                }`}
             >
               {(() => {
                 const title = eventData?.name?.en ?? eventData?.name?.fr ?? eventData?.name?.ar ?? eventData?.name;
@@ -282,9 +282,8 @@ const EventScreen = () => {
               }}
             />
             <View
-              className={`${
-                colorScheme === "dark" ? "bg-slate-400/10" : "bg-white"
-              } rounded-lg mt-5 `}
+              className={`${colorScheme === "dark" ? "bg-slate-400/10" : "bg-white"
+                } rounded-lg mt-5 `}
             >
               {eventData?.date && (
                 <View className="p-3">
@@ -309,24 +308,21 @@ const EventScreen = () => {
               {Array.isArray(eventParticipant) && eventParticipant.length > 0 ? (
                 <View className=" border-t p-3 border-stone-200">
                   <Text
-                    className={`font-medium text-xl my-3 ${
-                      colorScheme === "dark" ? "text-white" : "text-black"
-                    }`}
+                    className={`font-medium text-xl my-3 ${colorScheme === "dark" ? "text-white" : "text-black"
+                      }`}
                   >
                     Participants :{" "}
                   </Text>
                   {eventParticipant.map((item, index) => (
                     <View
                       key={index}
-                      className={`p-4 mb-4 border-2  rounded-lg flex-row items-center gap-2 ${
-                        colorScheme === "dark"
-                          ? "bg-[#c3c3c366]"
-                          : "bg-gray-200"
-                      } ${
-                        item.is_visited
+                      className={`p-4 mb-4 border-2  rounded-lg flex-row items-center gap-2 ${colorScheme === "dark"
+                        ? "bg-[#c3c3c366]"
+                        : "bg-gray-200"
+                        } ${item.is_visited
                           ? "border-green-500"
                           : "border-[#c3c3c366]"
-                      }`}
+                        }`}
                     >
                       <View className="w-10 h-10 rounded-full bg-black justify-center items-center">
                         <Text className="text-xl text-white">
@@ -335,16 +331,14 @@ const EventScreen = () => {
                       </View>
                       <View>
                         <Text
-                          className={`font-medium ${
-                            colorScheme === "dark" ? "text-white" : "text-black"
-                          }`}
+                          className={`font-medium ${colorScheme === "dark" ? "text-white" : "text-black"
+                            }`}
                         >
                           {item.name}
                         </Text>
                         <Text
-                          className={`text-base ${
-                            colorScheme === "dark" ? "text-white" : "text-black"
-                          }`}
+                          className={`text-base ${colorScheme === "dark" ? "text-white" : "text-black"
+                            }`}
                         >
                           {item.email}
                         </Text>
