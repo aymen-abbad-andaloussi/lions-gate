@@ -123,55 +123,56 @@ export default function SessionScreen() {
   };
 
   const checkStudent = async (data) => {
-    // Check if the QR code contains JSON data with code and email fields
-    if (data.startsWith("{") && (data.includes("\"code\"") && data.includes("\"email\""))) {
-      if (!waiting) {
-        setMessage(null);
-        setWaiting(true);
-        try {
-          const info = JSON.parse(data);
-          const { email, code } = info;
+    if (waiting) return; // 🚀 Block multiple scans instantly
 
-          // Validate that both code and email exist
-          if (!code || !email) {
-            setMessage("Invalid QR code format");
-            setWaiting(false);
-            return;
-          }
+    // Ensure QR contains the expected JSON structure
+    if (data && data.startsWith("{") && data.includes("\"code\"") && data.includes("\"email\"")) {
+      setMessage(null);
+      setWaiting(true);
 
-          const response = await axios.put(`${APP_URL}validate-invitation`, {
-            code,
-            email,
-            id,
-            sessionId,
-          });
-          console.log(response);
+      try {
+        const info = JSON.parse(data);
+        const { email, code } = info;
 
-          const { message, profile } = response.data;
-          setMessage(message);
-          await getInfoData();
-          setTimeout(() => {
-            setScanner(false);
-            setWaiting(false);
-            if (profile) {
-              router.navigate(`profile/${profile.id}?session=${id}`);
-            }
-          }, 1500);
-        } catch (error) {
-          const msg = error?.response?.data?.message || "Invalid QR code or network error";
-          setMessage(msg);
-          setTimeout(() => {
-            setWaiting(false);
-          }, 2000);
+        if (!code || !email) {
+          setMessage("Invalid QR code format");
+          setWaiting(false);
+          return;
         }
+
+        const response = await axios.put(`${APP_URL}validate-invitation`, {
+          code,
+          email,
+          id,
+          sessionId,
+        });
+
+        const { message, profile } = response.data;
+        setMessage(message);
+        await getInfoData();
+
+        setTimeout(() => {
+          setScanner(false);   // 🚀 Close camera after first scan
+          setWaiting(false);   // Reset lock
+          if (profile) {
+            router.navigate(`profile/${profile.id}?session=${id}`);
+          }
+        }, 1500);
+      } catch (error) {
+        const msg = error?.response?.data?.message || "Invalid QR code or network error";
+        setMessage(msg);
+        setTimeout(() => {
+          setWaiting(false); // Release lock after error
+        }, 2000);
       }
     } else {
       setMessage("Invalid QR code format");
       setTimeout(() => {
-        setWaiting(false);
+        setWaiting(false); // Release lock after invalid scan
       }, 2000);
     }
   };
+
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -223,7 +224,10 @@ export default function SessionScreen() {
         {permission?.granted ? (
           <CameraView
             facing="back"
-            onBarcodeScanned={({ data }) => checkStudent(data)}
+            onBarcodeScanned={waiting ? undefined : ({ data }) => {
+              setWaiting(true);
+              checkStudent(data)
+            }}
             className="absolute h-screen w-screen"
           >
             <View className="h-screen w-screen" />
@@ -327,11 +331,10 @@ export default function SessionScreen() {
               <Pressable
                 onPress={loadMoreParticipants}
                 disabled={loadingMore}
-                className={`px-8 py-4 rounded-full border-2 ${
-                  colorScheme === "dark"
-                    ? "bg-white/10 border-white/20"
-                    : "bg-white border-black/10 shadow-sm"
-                } ${loadingMore ? "opacity-50" : ""}`}
+                className={`px-8 py-4 rounded-full border-2 ${colorScheme === "dark"
+                  ? "bg-white/10 border-white/20"
+                  : "bg-white border-black/10 shadow-sm"
+                  } ${loadingMore ? "opacity-50" : ""}`}
               >
                 {loadingMore ? (
                   <View className="flex-row items-center">
@@ -339,9 +342,8 @@ export default function SessionScreen() {
                       size="small"
                       color={colorScheme === "dark" ? "white" : "black"}
                     />
-                    <Text className={`ml-2 text-base font-medium ${
-                      colorScheme === "dark" ? "text-white" : "text-black"
-                    }`}>
+                    <Text className={`ml-2 text-base font-medium ${colorScheme === "dark" ? "text-white" : "text-black"
+                      }`}>
                       Loading...
                     </Text>
                   </View>
@@ -352,9 +354,8 @@ export default function SessionScreen() {
                       size={20}
                       color={colorScheme === "dark" ? "white" : "black"}
                     />
-                    <Text className={`ml-2 text-base font-medium ${
-                      colorScheme === "dark" ? "text-white" : "text-black"
-                    }`}>
+                    <Text className={`ml-2 text-base font-medium ${colorScheme === "dark" ? "text-white" : "text-black"
+                      }`}>
                       Load More ({session.length - displayedParticipants.length} remaining)
                     </Text>
                   </View>
