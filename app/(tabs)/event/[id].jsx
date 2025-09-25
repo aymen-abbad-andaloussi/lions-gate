@@ -103,7 +103,6 @@ const EventScreen = () => {
     }
   };
 
-  // check Participant
   const checkParticipant = async (data) => {
     if (!data) {
       setMessage("Invalid QR code");
@@ -111,37 +110,38 @@ const EventScreen = () => {
     }
 
     if (data.startsWith('{"email')) {
-      if (!waiting) {
-        setMessage(null);
-        setWaiting(true);
-        let info = JSON.parse(data);
-        let code = info.code;
-        let email = info.email;
+      setMessage(null);
 
-        try {
-          const response = await axios.put(
-            APP_URL + "validate-event-invitation",
-            { code, email, id, eventId }
-          );
+      let info = JSON.parse(data);
+      let code = info.code;
+      let email = info.email;
 
-          let message = response.data.message;
-          await getInfoData();
+      try {
+        const response = await axios.put(
+          APP_URL + "validate-event-invitation",
+          { code, email, id }
+        );
 
-          setMessage(message);
-          setTimeout(() => {
-            setWaiting(false);
-            setScanner(false);
-          }, 1500);
-        } catch (error) {
-          setMessage("Error validating participant");
-          console.error(error?.response?.data?.message || error.message);
-          setWaiting(false);
-        }
+        let message = response.data.message;
+        await getInfoData();
+
+        setMessage(message);
+
+        setTimeout(() => {
+          setWaiting(false);   // reset for next time
+          setScanner(false);   // close camera after one scan
+        }, 1000);
+      } catch (error) {
+        setMessage("Error validating participant");
+        console.error(error?.response?.data?.message || error.message);
+        setWaiting(false);
       }
     } else {
       setMessage("Not found");
     }
   };
+
+
 
   useEffect(() => {
     const handleBackPress = () => {
@@ -177,13 +177,16 @@ const EventScreen = () => {
         <View className="flex-1 bg-black">
           <CameraView
             facing="back"
-            onBarcodeScanned={({ data }) => {
-              checkParticipant(data);
+            onBarcodeScanned={waiting ? undefined : ({ data }) => {
+              setWaiting(true);        // lock instantly
+              checkParticipant(data);  // only 1 scan
             }}
             className="absolute h-screen w-full"
           >
+
             <View className="h-screen w-screen" />
           </CameraView>
+
 
 
           {/* Overlay frame */}
