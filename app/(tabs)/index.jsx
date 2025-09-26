@@ -83,39 +83,15 @@ export default function HomeScreen() {
             <TouchableOpacity
               key={tab.name}
               onPress={() => setSelectedTab(tab.name)}
-              className={`flex-1 mx-1 h-11 rounded-full flex-row items-center justify-center shadow-sm ${
+              className={`flex-1 mx-1 h-11 rounded-xl flex-row items-center justify-center shadow-sm ${
                 selectedTab === tab.name
-                  ? colorScheme === "dark"
-                    ? "bg-white"
-                    : "bg-black"
-                  : colorScheme === "dark"
-                  ? "bg-white/10 border border-white/10"
-                  : "bg-gray-100 border border-black/10"
+                  ? "bg-[#FFC107]"
+                  : "bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)]"
               }`}
             >
-              <Ionicons
-                name={tab.icon}
-                size={18}
-                color={
-                  selectedTab === tab.name
-                    ? colorScheme === "dark"
-                      ? "black"
-                      : "white"
-                    : colorScheme === "dark"
-                    ? "white"
-                    : "black"
-                }
-              />
+              <Ionicons name={tab.icon} size={18} color={selectedTab === tab.name ? "black" : "white"} />
               <Text
-                className={`ml-2 text-sm font-medium capitalize ${
-                  selectedTab === tab.name
-                    ? colorScheme === "dark"
-                      ? "text-black"
-                      : "text-white"
-                    : colorScheme === "dark"
-                    ? "text-white/90"
-                    : "text-black/80"
-                }`}
+                className={`ml-2 text-sm font-medium capitalize ${selectedTab === tab.name ? "text-black" : "text-white/90"}`}
               >
                 {tab.name}
               </Text>
@@ -136,18 +112,9 @@ export default function HomeScreen() {
                     }}
                   >
                     <View
-                      className={`p-4 mb-4 rounded-2xl border ${
-                        colorScheme === "dark"
-                          ? "bg-white/10 border-white/10"
-                          : "bg-white/95 border-black/10 shadow-sm"
-                      }`}
+                      className={`p-4 mb-4 rounded-2xl border bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.08)]`}
                     >
-                      <Text
-                        className={`text-lg font-semibold mb-3 ${
-                          colorScheme === "dark" ? "text-white" : "text-black"
-                        }`}
-                        numberOfLines={1}
-                      >
+                      <Text className={`text-lg font-semibold mb-3 text-white`} numberOfLines={1}>
                         {item.name["en"]}
                       </Text>
                       <Image
@@ -186,11 +153,7 @@ export default function HomeScreen() {
                     activeOpacity={0.85}
                     className={`relative overflow-hidden p-4 mb-4 rounded-2xl border items-center flex-row justify-between ${
                       item.isFinish ? "opacity-60" : "opacity-100"
-                    } ${
-                      colorScheme === "dark"
-                        ? "bg-white/10 border-white/10"
-                        : "bg-white/95 border-black/10 shadow-sm"
-                    }`}
+                    } bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.08)]`}
                   >
                     <View
                       className={`absolute left-0 top-0 bottom-0 w-1 ${
@@ -216,62 +179,29 @@ export default function HomeScreen() {
                           size={14}
                           name="calendar-outline"
                         />
-                        <Text
+                      <Text
                           className={`ml-2 text-xs uppercase tracking-wider font-semibold ${
                             colorScheme === "dark" ? "text-white/60" : "text-black/60"
-                          }`}
-                        >
-                          {item.start_date.slice(0, item.start_date.length - 6)}
-                        </Text>
-                      </View>
-                      <Text
-                        className={`text-lg font-semibold mt-2 ${
-                          colorScheme === "dark" ? "text-white" : "text-black"
                         }`}
-                        numberOfLines={2}
                       >
+                        {item.start_date.slice(0, item.start_date.length - 6)}
+                      </Text>
+                      </View>
+                      <Text className={`text-lg font-semibold mt-2 text-white`} numberOfLines={2}>
                         {item.name}
                       </Text>
                     </View>
 
                     <View className="items-end">
-                      <View
-                        className={`flex-row items-center px-3 py-1 rounded-full ${
-                          colorScheme === "dark" ? "bg-white/10" : "bg-black/5"
-                        }`}
-                      >
-                        <Ionicons
-                          color={colorScheme === "dark" ? "white" : "black"}
-                          size={16}
-                          name={item.formation == "Media" ? "camera-outline" : "code-outline"}
-                        />
-                        <Text
-                          className={`ml-2 text-xs font-medium ${
-                            colorScheme === "dark" ? "text-white/90" : "text-black/80"
-                          }`}
-                        >
-                          {item.formation}
-                        </Text>
+                      <View className={`flex-row items-center px-3 py-1 rounded-full bg-white/10`}>
+                        <Ionicons color={'white'} size={16} name={item.formation == "Media" ? "camera-outline" : "code-outline"} />
+                        <Text className={`ml-2 text-xs font-medium text-white/90`}>{item.formation}</Text>
                       </View>
                       <View
-                        className={`mt-3 px-2 py-0.5 rounded-full ${
-                          item.isFinish
-                            ? colorScheme === "dark"
-                              ? "bg-white/5"
-                              : "bg-black/5"
-                            : colorScheme === "dark"
-                            ? "bg-green-500/20"
-                            : "bg-green-500/10"
-                        }`}
+                        className={`mt-3 px-2 py-0.5 rounded-full ${item.isFinish ? "bg-white/5" : "bg-green-500/20"}`}
                       >
-                        <Text
-                          className={`text-[10px] uppercase tracking-wider ${
-                            item.isFinish
-                              ? colorScheme === "dark"
-                                ? "text-white/60"
-                                : "text-black/60"
-                              : "text-green-600"
-                          }`}
+                      <Text
+                          className={`text-[10px] uppercase tracking-wider ${item.isFinish ? "text-white/60" : "text-green-600"}`}
                         >
                           {item.isFinish ? "Finished" : "Upcoming"}
                         </Text>
@@ -281,8 +211,8 @@ export default function HomeScreen() {
                           colorScheme === "dark" ? "bg-white/5" : "bg-black/5"
                         }`}
                       >
-                        <Ionicons
-                          color={colorScheme === "dark" ? "white" : "black"}
+                      <Ionicons
+                        color={colorScheme === "dark" ? "white" : "black"}
                           size={18}
                           name="chevron-forward"
                         />

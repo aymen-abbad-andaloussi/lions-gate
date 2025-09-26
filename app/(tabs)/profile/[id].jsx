@@ -126,7 +126,7 @@ export default function ProfileScreen() {
   return (
     <>
       {!shooter ? (
-        <View className="p-5">
+        <View className="p-5 bg-black flex-1">
           {/* Navbar */}
           <View className='w-full px-1 h-[10vh] mt-6 flex-row items-center justify-between'>
             <View>
@@ -176,12 +176,12 @@ export default function ProfileScreen() {
               {/* Info & Manual Check */}
               {profile && (
                 <View className="mt-6 flex-row items-center justify-between">
-                  <Text className={`font-bold mt-2 px-2 py-1 rounded-full ${colorScheme === 'dark' ? 'text-white bg-[#252529]' : 'text-black bg-[#c3c3c366]'}`}>
+                  <Text className={`font-bold mt-2 px-2 py-1 rounded-full text-white bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)]`}>
                     ID : #{profile?.id}
                   </Text>
                   {!profile?.is_visited && (
-                    <TouchableOpacity onPress={manualChecking} className="px-5 py-2 bg-green-400 rounded-lg">
-                      <Text className="font-bold">Manual Checking</Text>
+                    <TouchableOpacity onPress={manualChecking} className="px-5 py-2 bg-[#FFC107] rounded-xl">
+                      <Text className="font-bold text-black">Manual Checking</Text>
                     </TouchableOpacity>
                   )}
                   <Text className={`font-bold mt-2 ${profile?.is_visited ? 'text-green-500' : 'text-gray-500'}`}>
@@ -204,7 +204,7 @@ export default function ProfileScreen() {
               >
                 {/* Personal info */}
                 <Text className={`text-lg mt-6 capitalize ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>Personal Information</Text>
-                <View className={`p-5 rounded-lg mt-6 ${colorScheme === "dark" ? "bg-[#18181b]" : "bg-[#c3c3c366]"}`}>
+                <View className={`p-5 rounded-2xl mt-6 bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)]`}>
                   {profile && (
                     <>
                       <View className="flex-row justify-start items-center gap-x-5">
@@ -235,7 +235,7 @@ export default function ProfileScreen() {
 
                 {/* Contact info */}
                 <Text className={`text-lg mt-6 capitalize ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>Contact Information</Text>
-                <View className={`p-5 rounded-lg mt-6 ${colorScheme === "dark" ? "bg-[#18181b]" : "bg-[#c3c3c366]"}`}>
+                <View className={`p-5 rounded-2xl mt-6 bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)]`}>
                   {profile && (
                     <>
                       <View className="flex-row justify-start items-center gap-x-5">
@@ -252,7 +252,7 @@ export default function ProfileScreen() {
 
                 {/* Motivation info */}
                 <Text className={`text-lg mt-6 capitalize ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>Motivation</Text>
-                <View className={`p-5 rounded-lg mt-6 ${colorScheme === "dark" ? "bg-[#18181b]" : "bg-[#c3c3c366]"}`}>
+                <View className={`p-5 rounded-2xl mt-6 bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)]`}>
                   <Text className={`leading-loose ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>{profile?.motivation}</Text>
                 </View>
               </ScrollView>

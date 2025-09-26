@@ -1,6 +1,6 @@
 import { useCameraPermissions, CameraView } from "expo-camera";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Logo } from "@/assets/images/logo";
 import { useAppContext } from "@/context";
@@ -122,13 +122,16 @@ export default function SessionScreen() {
     }
   };
 
-  const checkStudent = async (data) => {
-    if (waiting) return; // 🚀 Block multiple scans instantly
 
-    // Ensure QR contains the expected JSON structure
+  const scanLock = useRef(false); 
+
+  const checkStudent = async (data) => {
+    if (scanLock.current) return;
+    scanLock.current = true; 
+    setWaiting(true);
+
     if (data && data.startsWith("{") && data.includes("\"code\"") && data.includes("\"email\"")) {
       setMessage(null);
-      setWaiting(true);
 
       try {
         const info = JSON.parse(data);
@@ -136,6 +139,7 @@ export default function SessionScreen() {
 
         if (!code || !email) {
           setMessage("Invalid QR code format");
+          scanLock.current = false;
           setWaiting(false);
           return;
         }
@@ -152,26 +156,30 @@ export default function SessionScreen() {
         await getInfoData();
 
         setTimeout(() => {
-          setScanner(false);   // 🚀 Close camera after first scan
-          setWaiting(false);   // Reset lock
+          setScanner(false);
+          setWaiting(false);
+          scanLock.current = false;
           if (profile) {
             router.navigate(`profile/${profile.id}?session=${id}`);
           }
-        }, 1500);
+        }, 1000);
       } catch (error) {
         const msg = error?.response?.data?.message || "Invalid QR code or network error";
         setMessage(msg);
         setTimeout(() => {
-          setWaiting(false); // Release lock after error
+          setWaiting(false);
+          scanLock.current = false; 
         }, 2000);
       }
     } else {
       setMessage("Invalid QR code format");
       setTimeout(() => {
-        setWaiting(false); // Release lock after invalid scan
+        setWaiting(false);
+        scanLock.current = false; 
       }, 2000);
     }
   };
+
 
 
   useEffect(() => {
@@ -224,10 +232,7 @@ export default function SessionScreen() {
         {permission?.granted ? (
           <CameraView
             facing="back"
-            onBarcodeScanned={waiting ? undefined : ({ data }) => {
-              setWaiting(true);
-              checkStudent(data)
-            }}
+            onBarcodeScanned={({ data }) => checkStudent(data)}
             className="absolute h-screen w-screen"
           >
             <View className="h-screen w-screen" />
@@ -282,7 +287,7 @@ export default function SessionScreen() {
   }
 
   return (
-    <ScrollView className="p-5 bg-[#f7f7f8] dark:bg-[#151718]" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => getInfoData(true)} />}>
+    <ScrollView className="p-5 bg-[#f7f7f8] dark:bg-[#151718]" refreshControl={<RefreshControl refreshing={refreshing} onRefr esh={() => getInfoData(true)} />}>
       <View className="flex-row justify-between items-center mt-12 px-1">
         <Ionicons name="arrow-back" size={24} color={colorScheme === "dark" ? "white" : "black"} onPress={() => router.navigate("/")} />
         <Text className={`text-base font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`} numberOfLines={1}>{title}</Text>

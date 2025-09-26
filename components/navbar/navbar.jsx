@@ -27,15 +27,14 @@ const Navbar = () => {
 
     return (
         <>
-
-        <View className=' w-full h-[10vh] mt-6 flex-row items-center justify-between'>
+        <View className='w-full h-[10vh] mt-6 flex-row items-center justify-between'>
             <View>
-                <Text className={`text-sm capitalize font-light ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>Checkin time</Text>
-                <Text className={`text-2xl capitalize mt-1 ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>{greeting}</Text>
+                <Text className={`text-sm capitalize font-light text-white/70`}>Checkin time</Text>
+                <Text className={`text-2xl capitalize mt-1 text-white`}>{greeting}</Text>
             </View>
 
             <View className='mt-4'>
-                <Logo color={colorScheme === 'dark' ? "white" : "black"} />
+                <Logo color={'white'} />
             </View>
         </View>
         </>
