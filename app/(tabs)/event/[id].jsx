@@ -194,7 +194,7 @@ const EventScreen = () => {
 
   return (
     <ScrollView
-      className="p-5 bg-[#f7f7f8] dark:bg-[#151718]"
+      className="p-5 bg-white dark:bg-surface-muted"
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -318,7 +318,7 @@ const EventScreen = () => {
             {/* Stats cards (match session style) */}
             <View className="flex-row mt-2 mb-5 space-x-4 gap-x-4">
               <View
-                className={`flex-1 p-4 rounded-2xl border ${colorScheme === "dark"
+                className={`flex-1 p-4 rounded-lg border ${colorScheme === "dark"
                   ? "bg-white/10 border-white/10"
                   : "bg-white/95 border-black/10 shadow-sm"
                   }`}
@@ -341,7 +341,7 @@ const EventScreen = () => {
                 </Text>
               </View>
               <View
-                className={`flex-1 p-4 rounded-2xl border ${colorScheme === "dark"
+                className={`flex-1 p-4 rounded-lg border ${colorScheme === "dark"
                   ? "bg-white/10 border-white/10"
                   : "bg-white/95 border-black/10 shadow-sm"
                   }`}

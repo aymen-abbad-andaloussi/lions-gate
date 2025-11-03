@@ -25,7 +25,7 @@ const LoadingScreen = () => {
     });
     return (
             <Animated.View style={{ transform: [{ rotate }] }}>
-                <AntDesign name={'loading2'} color={'#fcc801'} size={50} />
+                <AntDesign name={'loading2'} color={'#FDBB10'} size={48} />
             </Animated.View>
     );
 }

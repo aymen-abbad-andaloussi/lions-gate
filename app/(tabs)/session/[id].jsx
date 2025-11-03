@@ -287,33 +287,52 @@ export default function SessionScreen() {
   }
 
   return (
-    <ScrollView className="p-5 bg-[#f7f7f8] dark:bg-[#151718]" refreshControl={<RefreshControl refreshing={refreshing} onRefr esh={() => getInfoData(true)} />}>
-      <View className="flex-row justify-between items-center mt-12 px-1">
-        <Ionicons name="arrow-back" size={24} color={colorScheme === "dark" ? "white" : "black"} onPress={() => router.navigate("/")} />
-        <Text className={`text-base font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`} numberOfLines={1}>{title}</Text>
-        <Ionicons name="qr-code-outline" size={28} color={colorScheme === "dark" ? "white" : "black"} onPress={toggleCamera} />
-      </View>
-
-      <View className="flex-row mt-6 space-x-4 gap-x-4">
-        <View className={`flex-1 p-4 rounded-2xl border ${colorScheme === "dark" ? "bg-white/10 border-white/10" : "bg-white/95 border-black/10 shadow-sm"}`}>
-          <Text className={`text-xs uppercase tracking-wider ${colorScheme === "dark" ? "text-white/70" : "text-black/60"}`}>Participants</Text>
-          <Text className={`mt-1 text-3xl font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`}>{backup.length}</Text>
-        </View>
-        <View className={`flex-1 p-4 rounded-2xl border ${colorScheme === "dark" ? "bg-white/10 border-white/10" : "bg-white/95 border-black/10 shadow-sm"}`}>
-          <Text className={`text-xs uppercase tracking-wider ${colorScheme === "dark" ? "text-white/70" : "text-black/60"}`}>Attended</Text>
-          <Text className={`mt-1 text-3xl font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`}>{attended.length}</Text>
+    <ScrollView className="p-5 bg-white dark:bg-surface-muted" refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => getInfoData(true)} />}>
+      {/* Header */}
+      <View className="mt-10">
+        <View className="flex-row items-center justify-between">
+          <Pressable onPress={() => router.navigate("/")} className={`w-10 h-10 rounded-lg items-center justify-center ${colorScheme === 'dark' ? 'bg-white/5' : 'bg-black/5'}`}>
+            <Ionicons name="arrow-back" size={18} color={colorScheme === 'dark' ? 'white' : 'black'} />
+          </Pressable>
+          <Text className={`flex-1 text-center mx-3 text-base font-semibold ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`} numberOfLines={1}>{title}</Text>
+          <Pressable onPress={toggleCamera} className={`w-10 h-10 rounded-lg items-center justify-center bg-brand`}>
+            <Ionicons name="qr-code-outline" size={18} color="#111111" />
+          </Pressable>
         </View>
       </View>
 
-      <TextInput
-        placeholder="Search..."
-        value={search}
-        onChangeText={handleSearch}
-        className={`mt-6 px-4 py-3 rounded-full border ${colorScheme === "dark" ? "bg-white/5 text-white border-white/10" : "bg-white text-black border-black/10 shadow-sm"}`}
-        placeholderTextColor={colorScheme === "dark" ? "#aaa" : "#555"}
-      />
+      {/* Stat cards */}
+      <View className="flex-row mt-6 gap-x-4">
+        <View className={`flex-1 p-5 rounded-lg border ${colorScheme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-white border-black/10'}`}>
+          <Text className={`text-xs uppercase tracking-wider ${colorScheme === 'dark' ? 'text-white/60' : 'text-black/60'}`}>Participants</Text>
+          <Text className={`mt-2 text-3xl font-semibold ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>{backup.length}</Text>
+        </View>
+        <View className={`flex-1 p-5 rounded-lg border ${colorScheme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-white border-black/10'}`}>
+          <Text className={`text-xs uppercase tracking-wider ${colorScheme === 'dark' ? 'text-white/60' : 'text-black/60'}`}>Attended</Text>
+          <Text className={`mt-2 text-3xl font-semibold ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>{attended.length}</Text>
+        </View>
+      </View>
 
-      <Text className={`mt-6 text-lg font-semibold ${colorScheme === "dark" ? "text-white" : "text-black"}`}>Participants</Text>
+      {/* Search */}
+      <View className="mt-6 flex-row items-center">
+        <View className={`flex-1 flex-row items-center rounded-lg border px-3 ${colorScheme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-white border-black/10'}`}>
+          <Ionicons name="search" size={16} color={colorScheme === 'dark' ? '#9BA1A6' : '#687076'} />
+          <TextInput
+            placeholder="Search participants"
+            value={search}
+            onChangeText={handleSearch}
+            className={`ml-2 py-3 flex-1 ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}
+            placeholderTextColor={colorScheme === 'dark' ? '#9BA1A6' : '#687076'}
+          />
+        </View>
+        <View className="w-2" />
+        <View className="px-3 py-3 rounded-lg bg-brand">
+          <Text className="text-[#111111] text-xs font-semibold">Scan</Text>
+        </View>
+      </View>
+
+      {/* List */}
+      <Text className={`mt-6 text-lg font-semibold ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>Participants</Text>
 
       {session.length === 0 ? (
         <View className="items-center justify-center h-60">

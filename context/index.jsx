@@ -66,6 +66,7 @@ const AppProvider = ({ children }) => {
     events,
     IMAGE_URL,
     APP_URL,
+    Token,
     sessionData,
     refreshingSession,
     setRefreshingSession,
