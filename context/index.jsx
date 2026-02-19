@@ -18,8 +18,8 @@ const AppProvider = ({ children }) => {
   // const APP_URL = "http://192.168.100.100:8000/api/";
   // const IMAGE_URL = `http://192.168.100.100:8000/storage/images`;
 
-  const [infoSession, setInfoSession] = useState(null);
-  const [events, setEvents] = useState(null);
+  const [infoSession, setInfoSession] = useState([]);
+  const [events, setEvents] = useState([]);
   const [refreshingSession, setRefreshingSession] = useState(false);
   const [showUnauthorizedModal, setShowUnauthorizedModal] = useState(false);
 
@@ -32,7 +32,8 @@ const AppProvider = ({ children }) => {
       const response = await axios.get(`${APP_URL}lionsgate/infosessions`, {
         headers: { Authorization: `Bearer ${Token}` },
       });
-      setInfoSession(response.data.infos);
+      const infos = response.data?.infos;
+      setInfoSession(Array.isArray(infos) ? infos : []);
     } catch (error) {
       if (error.response?.status === 401) {
         setShowUnauthorizedModal(true);
@@ -47,7 +48,8 @@ const AppProvider = ({ children }) => {
       const response = await axios.get(`${APP_URL}events`, {
         headers: { Authorization: `Bearer ${Token}` },
       });
-      setEvents(response.data);
+      const evts = response.data;
+      setEvents(Array.isArray(evts) ? evts : (Array.isArray(evts?.data) ? evts.data : []));
     } catch (error) {
       if (error.response?.status === 401) {
         setShowUnauthorizedModal(true);

@@ -47,7 +47,8 @@ export default function HomeScreen() {
 
   // Determine the data to display based on the selected tab + filters + query
   const getData = () => {
-    const base = selectedTab === "Events" ? (events || []) : (infoSession || []);
+    const raw = selectedTab === "Events" ? events : infoSession;
+    const base = Array.isArray(raw) ? raw : [];
     let filtered = base;
 
     if (selectedTab === 'Info Sessions') {
@@ -250,7 +251,7 @@ export default function HomeScreen() {
             </View>
           )}
           {selectedTab == "Events" ? (
-            getData() ? (
+            getData().length > 0 ? (
               <View>
                 {getData().map((item, index) => (
                   <TouchableOpacity
@@ -292,7 +293,7 @@ export default function HomeScreen() {
               </View>
             )
           ) : selectedTab == "Info Sessions" ? (
-            getData() ? (
+            getData().length > 0 ? (
               <View>
                 {getData().map((item, index) => (
                   <TouchableOpacity
